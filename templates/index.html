@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Global styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        /* Styles for chat toggle button */
+        .chat-toggle {
+            position: fixed;
+            bottom: 70px; /* Adjusted position */
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            transition: background-color 0.3s ease-in-out;
+            z-index: 9999; /* Ensure it's above other elements */
+        }
+
+        /* Styles for chat toggle button on hover */
+        .chat-toggle:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styles for chat container */
+        .chat-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            max-width: 80%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out; /* Added transition */
+        }
+
+        /* Styles for chat messages */
+        .chat-messages {
+            padding: 10px;
+            overflow-y: auto;
+            height: 300px; /* Decreased height */
+        }
+
+        /* Styles for user input */
+        .user-input {
+            width: calc(100% - 20px);
+            margin: 0 auto;
+            padding: 10px;
+            border: none;
+            border-top: 1px solid #ccc;
+            outline: none;
+            resize: none;
+            background-color: #f9f9f9;
+        }
+
+        /* Styles for chat message bubbles */
+        .message-bubble {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            overflow-wrap: break-word;
+        }
+
+        /* Styles for user message */
+        .user-message {
+            background-color: #4CAF50;
+            color: white;
+            float: right;
+            clear: both; /* Ensure proper positioning */
+            margin-left: 20%; /* Adjusted margin */
+            padding: 10px;
+        }
+
+        /* Styles for bot message */
+        .bot-message {
+            background-color: #008CBA;
+            color: white;
+            float: left;
+            clear: both; /* Ensure proper positioning */
+            margin-right: 20%; /* Adjusted margin */
+            padding: 10px;
+        }
+
+        /* Styles for message icon */
+        .message-icon {
+            margin-right: 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Chat toggle button -->
+    <button class="chat-toggle" id="chat-toggle" onclick="toggleChat()">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- Chat container -->
+    <div class="chat-container" id="chat-container">
+        <div class="chat-messages" id="chat-messages">
+            <!-- Initial message -->
+            <div class="message-bubble bot-message">
+                <i class="message-icon fas fa-robot"></i> How can I assist you today?
+            </div>
+        </div>
+        <input type="text" class="user-input" id="user-input" placeholder="Type your message...">
+    </div>
+
+    <script>
+        // Get elements
+        var chatContainer = document.getElementById("chat-container");
+        var chatToggle = document.getElementById("chat-toggle");
+        var userInput = document.getElementById("user-input");
+
+        // Function to toggle chat visibility
+        function toggleChat() {
+            if (chatContainer.style.transform === "translateY(100%)") {
+                chatContainer.style.transform = "translateY(0)";
+                chatToggle.innerHTML = '<i class="fas fa-chevron-down"></i>';
+            } else {
+                chatContainer.style.transform = "translateY(100%)";
+                chatToggle.innerHTML = '<i class="fas fa-chevron-up"></i>';
+            }
+        }
+
+        // Function to add message to chat
+        function addMessage(message, sender) {
+            var chatMessages = document.getElementById("chat-messages");
+            var messageElement = document.createElement("div");
+            messageElement.className = "message-bubble " + (sender === "user" ? "user-message" : "bot-message");
+            messageElement.innerHTML = `<i class="message-icon fas fa-${sender === "user" ? "user" : "robot"}"></i> ${message}`;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Function to send user message to server and receive bot response
+        function sendMessage() {
+            var userMessage = userInput.value;
+            addMessage(userMessage, "user");
+            userInput.value = "";
+            fetch("/get?msg=" + encodeURIComponent(userMessage))
+            .then(response => response.text())
+            .then(data => addMessage(data, "bot"));
+        }
+
+        // Event listener for user input
+        userInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                sendMessage();
+            }
+        });
+
+        // Initial greeting message
+        // addMessage("How can I assist you today?", "bot");
+    </script>
+</body>
+</html>
